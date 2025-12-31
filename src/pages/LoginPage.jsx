@@ -14,7 +14,8 @@ export default function LoginPage() {
     email: (val) =>
       /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(val.trim()) || "Email không hợp lệ",
     password: (val) =>
-      (val.match(/\d/g)?.length >= 3) || "Mật khẩu phải có ít nhất 3 chữ số",
+      /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,}$/.test(val) ||
+      "Mật khẩu ít nhất 6 ký tự, gồm chữ và số",
   };
 
   const handleBlur = (field, value) => {
