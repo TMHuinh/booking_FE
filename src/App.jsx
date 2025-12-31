@@ -7,7 +7,8 @@ import ScrollToTop from './components/ScrollToTop'
 import { useEffect } from 'react'
 import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/Register'
-
+import MovieDetailPage from './pages/MovieDetailPage'
+import AllMoviesPage from './pages/AllMoviesPage'
 
 function App() {
   const TitleHandler = () => {
@@ -73,7 +74,8 @@ function App() {
         <Route path='/' element={<HomePage />} />
         <Route path='/login' element={<LoginPage />} />
         <Route path='/register' element={<RegisterPage />} />
-
+        <Route path="/movies" element={<AllMoviesPage />} />
+        <Route path="/movie/:id" element={<MovieDetailPage />} />
       </Routes>
       <Footer />
     </BrowserRouter>
