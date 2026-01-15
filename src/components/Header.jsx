@@ -48,10 +48,17 @@ export default function Header({ search, setSearch }) {
     }
   }, []);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      await api.post("/auth/logout");
+    } catch (e) {}
+
     localStorage.removeItem("accessToken");
+
+    // 🔥 BẮT BUỘC
     setUser(null);
-    window.location.href = "/login";
+
+    navigate("/login", { replace: true });
   };
 
   return (
@@ -84,7 +91,13 @@ export default function Header({ search, setSearch }) {
       </div>
 
       {/* Main Navbar */}
-      <Navbar bg="dark" variant="dark" expand="lg" sticky="top" className="shadow-sm">
+      <Navbar
+        bg="dark"
+        variant="dark"
+        expand="lg"
+        sticky="top"
+        className="shadow-sm"
+      >
         <Container>
           <Navbar.Brand href="/" className="fw-bold fs-4">
             FilmSpot
@@ -119,9 +132,13 @@ export default function Header({ search, setSearch }) {
                 <Dropdown.Menu>
                   <Dropdown.Item href="/profile">Hồ sơ</Dropdown.Item>
                   <Dropdown.Item href="/tickets">Vé đã mua</Dropdown.Item>
-                  {user.role === "ADMIN" && <Dropdown.Item href="/admin">Quản trị</Dropdown.Item>}
+                  {user.role === "ADMIN" && (
+                    <Dropdown.Item href="/admin">Quản trị</Dropdown.Item>
+                  )}
                   <Dropdown.Divider />
-                  <Dropdown.Item onClick={handleLogout}>Đăng xuất</Dropdown.Item>
+                  <Dropdown.Item onClick={handleLogout}>
+                    Đăng xuất
+                  </Dropdown.Item>
                 </Dropdown.Menu>
               </Dropdown>
             ) : (

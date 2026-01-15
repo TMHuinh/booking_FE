@@ -15,20 +15,19 @@ import AdminRoutes from "./admin/AdminRoutes";
 function App() {
   const TitleHandler = () => {
     useEffect(() => {
-      const refreshOnLoad = async () => {
-        try {
-          const res = await api.post("/auth/refresh");
-          const newToken = res.data.result.accessToken;
-          localStorage.setItem("accessToken", newToken);
-          console.log("Refresh token khi load trang thành công");
-        } catch (err) {
-          // ❌ Không login hoặc refresh token hết hạn → bỏ qua
-          console.log("Không có refresh token hoặc chưa login");
-        }
-      };
+      const token = localStorage.getItem("accessToken");
+      if (!token) return;
 
-      refreshOnLoad();
+      api
+        .post("/auth/refresh")
+        .then((res) => {
+          localStorage.setItem("accessToken", res.data.result.accessToken);
+        })
+        .catch(() => {
+          localStorage.removeItem("accessToken");
+        });
     }, []);
+
     const location = useLocation();
 
     useEffect(() => {
