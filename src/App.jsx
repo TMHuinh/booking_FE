@@ -10,7 +10,7 @@ import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/Register";
 import MovieDetailPage from "./pages/MovieDetailPage";
 import AllMoviesPage from "./pages/AllMoviesPage";
-import AdminRoutes from "./admin/AdminRoutes";
+
 
 function App() {
   const TitleHandler = () => {
@@ -104,7 +104,7 @@ function App() {
         <Route path="/movies" element={<AllMoviesPage />} />
         <Route path="/movie/:id" element={<MovieDetailPage />} />
         {/* ADMIN */}
-        <Route path="/admin/*" element={<AdminRoutes />} />
+        {/* <Route path="/admin/*" element={<AdminRoutes />} /> */}
       </Routes>
 
       <Footer />
