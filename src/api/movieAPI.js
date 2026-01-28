@@ -1,3 +1,4 @@
+import axios from "axios";
 import api from "./axiosInstance";
 
 /**
@@ -9,7 +10,7 @@ import api from "./axiosInstance";
  */
 export const getAllMovies = async () => {
   try {
-    const response = await api.get("/movies");
+    const response = await axios.get("http://localhost:8080/api/movies");
     return response.data.result;
   } catch (err) {
     console.error("Lỗi khi lấy danh sách phim:", err);
