@@ -10,6 +10,7 @@ import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/Register";
 import MovieDetailPage from "./pages/MovieDetailPage";
 import AllMoviesPage from "./pages/AllMoviesPage";
+import BookingPage from "./pages/BookingPage";
 
 
 function App() {
@@ -103,6 +104,8 @@ function App() {
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/movies" element={<AllMoviesPage />} />
         <Route path="/movie/:id" element={<MovieDetailPage />} />
+        <Route path="/booking" element={<BookingPage />} />
+
         {/* ADMIN */}
         {/* <Route path="/admin/*" element={<AdminRoutes />} /> */}
       </Routes>

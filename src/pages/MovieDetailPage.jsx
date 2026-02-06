@@ -31,6 +31,8 @@ export default function MovieDetailPage() {
   const navigate = useNavigate();
   const user = getUserFromToken();
 
+  const [seatConfirmed, setSeatConfirmed] = useState(false);
+
   const [movie, setMovie] = useState(null);
   const [cinemas, setCinemas] = useState([]);
   const [allRooms, setAllRooms] = useState([]);
@@ -48,6 +50,26 @@ export default function MovieDetailPage() {
   const [loading, setLoading] = useState(true);
   const [roomLoading, setRoomLoading] = useState(false);
   const [seatLoading, setSeatLoading] = useState(false);
+
+  const SEAT_PRICE = {
+    NORMAL: 80000,
+    VIP: 150000,
+  };
+
+  const selectedSeatDetails = selectedSeats.map((code) => {
+    const seat = seats.find((s) => s.seatCode === code);
+    const type = seat?.type || "STANDARD";
+    const price = SEAT_PRICE[type] || 0;
+
+    return { code, type, price };
+  });
+
+  const totalPrice = selectedSeatDetails.reduce(
+    (sum, s) => sum + s.price,
+    0
+  );
+
+
 
   // ================= LOAD MOVIE + CINEMAS + ROOMS =================
   useEffect(() => {
@@ -73,6 +95,8 @@ export default function MovieDetailPage() {
     fetchData();
     return () => (mounted = false);
   }, [id]);
+
+
 
   // ================= CHỌN RẠP =================
   const handleSelectCinema = (cinemaId) => {
@@ -116,9 +140,12 @@ export default function MovieDetailPage() {
   // ================= CHỌN SUẤT =================
   const handleSelectShowtime = async (showtimeId) => {
     if (!user) {
-      alert("Vui lòng đăng nhập để chọn ghế");
+      alert("Vui lòng đăng nhập");
       return;
     }
+
+    setSeatConfirmed(false); // 🔥 QUAN TRỌNG
+    setSelectedSeats([]);
 
     setSelectedShowtime(showtimeId);
     if (!showtimeId) return;
@@ -127,61 +154,72 @@ export default function MovieDetailPage() {
     try {
       const seatStatus = await getSeatStatusByShowtime(showtimeId);
       setSeats(seatStatus);
-      setSelectedSeats([]);
       setModalOpen(true);
-    } catch (err) {
-      console.error("Lỗi load ghế:", err);
-      alert("Không thể tải ghế");
     } finally {
       setSeatLoading(false);
     }
   };
 
+
   // ================= TOGGLE GHẾ =================
   const toggleSeat = async (seatCode) => {
-    if (!user) return;
+    if (!user || !selectedShowtime) return;
+
+    const isSelected = selectedSeats.includes(seatCode);
 
     try {
-      if (selectedSeats.includes(seatCode)) {
-        setSelectedSeats((prev) => prev.filter((s) => s !== seatCode));
+      if (isSelected) {
+        // 1️⃣ release TRƯỚC
         await releaseSeats(selectedShowtime, [seatCode], user.id);
+
+        // 2️⃣ rồi mới update UI
+        setSelectedSeats((prev) => prev.filter((s) => s !== seatCode));
       } else {
-        setSelectedSeats((prev) => [...prev, seatCode]);
+        // 1️⃣ hold
         await holdSeats(selectedShowtime, [seatCode], user.id);
+
+        // 2️⃣ update UI
+        setSelectedSeats((prev) => [...prev, seatCode]);
       }
     } catch (err) {
-      console.error("Lỗi chọn ghế:", err);
+      alert("Ghế vừa bị người khác giữ 😢");
+      console.error(err);
     }
   };
 
+
   // ================= XÁC NHẬN GHẾ =================
-  const handleConfirmSeats = async () => {
-    if (!selectedSeats.length || !user) return;
-    try {
-      await confirmBooking(selectedShowtime, selectedSeats, user.id);
-      alert("🎉 Đặt vé thành công!");
-      setModalOpen(false);
-      setSelectedSeats([]);
-      const updatedSeats = await getSeatStatusByShowtime(selectedShowtime);
-      setSeats(updatedSeats);
-    } catch (err) {
-      console.error("Lỗi xác nhận:", err);
-      alert("Không thể xác nhận đặt vé");
-    }
+  // const handleConfirmSeats = async () => {
+  //   if (!selectedSeats.length || !user) return;
+  //   try {
+  //     await confirmBooking(selectedShowtime, selectedSeats, user.id);
+  //     alert("🎉 Đặt vé thành công!");
+  //     setModalOpen(false);
+  //     setSelectedSeats([]);
+  //     const updatedSeats = await getSeatStatusByShowtime(selectedShowtime);
+  //     setSeats(updatedSeats);
+  //   } catch (err) {
+  //     console.error("Lỗi xác nhận:", err);
+  //     alert("Không thể xác nhận đặt vé");
+  //   }
+  // };
+  const handleConfirmSeats = () => {
+    if (!selectedSeats.length) return;
+
+    setSeatConfirmed(true); // đánh dấu đã confirm ghế
+    setModalOpen(false);    // đóng modal
   };
+
 
   // ================= ĐÓNG MODAL =================
   const handleCloseModal = async () => {
-    if (selectedSeats.length && user) {
-      try {
-        await releaseSeats(selectedShowtime, selectedSeats, user.id);
-      } catch (err) {
-        console.error("Lỗi release ghế:", err);
-      }
+    if (!seatConfirmed && selectedSeats.length && user) {
+      await releaseSeats(selectedShowtime, selectedSeats, user.id);
     }
     setSelectedSeats([]);
     setModalOpen(false);
   };
+
 
   // ================= HELPER =================
   const getSeatColor = (seat) => {
@@ -292,19 +330,31 @@ export default function MovieDetailPage() {
               ))}
             </Form.Select>
 
-            <Button
-              style={{
-                background: "linear-gradient(90deg, #ff416c, #ff4b2b)",
-                border: "none",
-                borderRadius: "50px",
-                padding: "0.8rem 2rem",
-                fontWeight: "bold",
-              }}
-              onClick={handleConfirmSeats}
-              disabled={!selectedSeats.length}
-            >
-              Đặt vé ngay
-            </Button>
+            {seatConfirmed && (
+              <Button
+                className="mt-3"
+                style={{
+                  background: "linear-gradient(90deg, #00c6ff, #0072ff)",
+                  border: "none",
+                  borderRadius: "50px",
+                  padding: "0.8rem 2rem",
+                  fontWeight: "bold",
+                }}
+                onClick={() =>
+                  navigate("/booking", {
+                    state: {
+                      movie,
+                      showtime: showtimes.find(s => s.id === selectedShowtime),
+                      selectedSeats,
+                      seats, // ❗ CỰC KỲ QUAN TRỌNG
+                    },
+                  })
+                }
+              >
+                👉 Đặt vé
+              </Button>
+            )}
+
           </Col>
         </Row>
 
@@ -404,37 +454,36 @@ export default function MovieDetailPage() {
                               className="mb-2"
                             >
                               <Button
-  style={{
-    width: "40px",
-    height: "40px",
-    backgroundColor: getSeatColor(seat),
-    borderColor: "#444",
-    padding: 0,
-    borderRadius: "6px",
-    fontSize: "0.8rem",
-    transition: "transform 0.1s",
-  }}
-  // disable nếu ghế đã BOOKED hoặc ghế đang HOLDING mà không phải ghế mình giữ
-  disabled={
-    seat.status === "BOOKED" ||
-    ((seat.status === "HOLDING" || seat.status === "HELD") &&
-      !selectedSeats.includes(seat.seatCode))
-  }
-  onClick={() => toggleSeat(seat.seatCode)}
-  onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.1)")}
-  onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
-  title={`Ghế ${seat.seatCode} - ${seat.type} ${
-    selectedSeats.includes(seat.seatCode)
-      ? "(Đang chọn)"
-      : seat.status === "BOOKED"
-      ? "(Đã đặt)"
-      : seat.status === "HOLDING" || seat.status === "HELD"
-      ? "(Đang giữ)"
-      : ""
-  }`}
->
-  {seat.seatCode}
-</Button>
+                                style={{
+                                  width: "40px",
+                                  height: "40px",
+                                  backgroundColor: getSeatColor(seat),
+                                  borderColor: "#444",
+                                  padding: 0,
+                                  borderRadius: "6px",
+                                  fontSize: "0.8rem",
+                                  transition: "transform 0.1s",
+                                }}
+                                // disable nếu ghế đã BOOKED hoặc ghế đang HOLDING mà không phải ghế mình giữ
+                                disabled={
+                                  seat.status === "BOOKED" ||
+                                  ((seat.status === "HOLDING" || seat.status === "HELD") &&
+                                    !selectedSeats.includes(seat.seatCode))
+                                }
+                                onClick={() => toggleSeat(seat.seatCode)}
+                                onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.1)")}
+                                onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
+                                title={`Ghế ${seat.seatCode} - ${seat.type} ${selectedSeats.includes(seat.seatCode)
+                                  ? "(Đang chọn)"
+                                  : seat.status === "BOOKED"
+                                    ? "(Đã đặt)"
+                                    : seat.status === "HOLDING" || seat.status === "HELD"
+                                      ? "(Đang giữ)"
+                                      : ""
+                                  }`}
+                              >
+                                {seat.seatCode}
+                              </Button>
 
                             </Col>
                           );
@@ -444,20 +493,32 @@ export default function MovieDetailPage() {
               </>
             )}
           </Modal.Body>
-          <Modal.Footer>
-            <Button variant="secondary" onClick={handleCloseModal}>
-              Hủy
-            </Button>
-            <Button
-              variant="success"
-              onClick={handleConfirmSeats}
-              disabled={!selectedSeats.length}
-            >
-              Xác nhận ({selectedSeats.length})
-            </Button>
+          <Modal.Footer className="d-flex justify-content-between align-items-center">
+            {/* GIÁ */}
+            <div className="fw-bold fs-5">
+              💰 Tổng tiền:{" "}
+              <span style={{ color: "#ff416c" }}>
+                {totalPrice.toLocaleString()} VND
+              </span>
+            </div>
+
+            {/* NÚT */}
+            <div className="d-flex gap-2">
+              <Button variant="secondary" onClick={handleCloseModal}>
+                Hủy
+              </Button>
+              <Button
+                variant="success"
+                onClick={handleConfirmSeats}
+                disabled={!selectedSeats.length}
+              >
+                Xác nhận ({selectedSeats.length})
+              </Button>
+            </div>
           </Modal.Footer>
+
         </Modal>
       </Container>
-    </div>
+    </div >
   );
 }
