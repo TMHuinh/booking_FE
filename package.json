@@ -21,6 +21,7 @@
     "vite": "^7.2.4"
   },
   "dependencies": {
+    "antd": "^6.1.4",
     "axios": "^1.13.2",
     "bootstrap": "^5.3.2",
     "jwt-decode": "^4.0.0",
