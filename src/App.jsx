@@ -11,6 +11,8 @@ import RegisterPage from "./pages/Register";
 import MovieDetailPage from "./pages/MovieDetailPage";
 import AllMoviesPage from "./pages/AllMoviesPage";
 import BookingPage from "./pages/BookingPage";
+import CheckoutPage from "./pages/CheckoutPage";
+import MyBookingsPage from "./pages/MyBookingsPage";
 
 
 function App() {
@@ -105,6 +107,8 @@ function App() {
         <Route path="/movies" element={<AllMoviesPage />} />
         <Route path="/movie/:id" element={<MovieDetailPage />} />
         <Route path="/booking" element={<BookingPage />} />
+        <Route path="/checkout" element={<CheckoutPage />} />
+        <Route path="/my-bookings" element={<MyBookingsPage />} />
 
         {/* ADMIN */}
         {/* <Route path="/admin/*" element={<AdminRoutes />} /> */}

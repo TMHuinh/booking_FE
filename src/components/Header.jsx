@@ -131,7 +131,7 @@ export default function Header({ search, setSearch }) {
 
                 <Dropdown.Menu>
                   <Dropdown.Item href="/profile">Hồ sơ</Dropdown.Item>
-                  <Dropdown.Item href="/tickets">Vé đã mua</Dropdown.Item>
+                  <Dropdown.Item href="/my-bookings">Vé đã mua</Dropdown.Item>
                   {user.role === "ADMIN" && (
                     <Dropdown.Item href="/admin">Quản trị</Dropdown.Item>
                   )}
