@@ -1,7 +1,11 @@
-// src/api/axiosInstance.js
 import axios from "axios";
 
 const api = axios.create({
+  baseURL: "http://localhost:8080/api",
+  withCredentials: true,
+});
+
+const refreshApi = axios.create({
   baseURL: "http://localhost:8080/api",
   withCredentials: true,
 });
@@ -33,16 +37,13 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    if (
-      error.response?.status === 401 &&
-      !originalRequest._retry
-    ) {
+    if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
 
       if (!isRefreshing) {
         isRefreshing = true;
         try {
-          const res = await api.post("/auth/refresh");
+          const res = await refreshApi.post("/auth/refresh");
           const newToken = res.data.result.accessToken;
 
           localStorage.setItem("accessToken", newToken);
@@ -59,8 +60,7 @@ api.interceptors.response.use(
 
       return new Promise((resolve) => {
         addRefreshSubscriber((token) => {
-          originalRequest.headers.Authorization =
-            `Bearer ${token}`;
+          originalRequest.headers.Authorization = `Bearer ${token}`;
           resolve(api(originalRequest));
         });
       });

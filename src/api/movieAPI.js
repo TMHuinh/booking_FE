@@ -1,3 +1,4 @@
+import axios from "axios";
 import api from "./axiosInstance";
 
 /**
@@ -16,6 +17,7 @@ export const getAllMovies = async () => {
     throw err;
   }
 };
+
 
 /**
  * Lấy phim đang chiếu
@@ -98,7 +100,11 @@ export const filterMoviesByGenre = async (genreId) => {
  */
 export const createMovie = async (data) => {
   try {
-    const response = await api.post("/movies", data);
+    const response = await api.post("/movies", data, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
     return response.data.result;
   } catch (err) {
     console.error("Lỗi khi tạo phim:", err);
@@ -106,19 +112,25 @@ export const createMovie = async (data) => {
   }
 };
 
+
 /**
  * Cập nhật phim
  * @param {string} id
  */
 export const updateMovie = async (id, data) => {
   try {
-    const response = await api.put(`/movies/${id}`, data);
+    const response = await api.put(`/movies/${id}`, data, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
     return response.data.result;
   } catch (err) {
     console.error("Lỗi khi cập nhật phim:", err);
     throw err;
   }
 };
+
 
 /**
  * Xóa phim

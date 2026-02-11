@@ -9,6 +9,7 @@ import {
   Dropdown,
 } from "react-bootstrap";
 import { FaFacebookF, FaTwitter, FaInstagram } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 
 // Hàm parse JWT
 const parseJwt = (token) => {
@@ -29,6 +30,7 @@ const parseJwt = (token) => {
 
 export default function Header({ search, setSearch }) {
   const [user, setUser] = useState(null);
+  const navigate = useNavigate(); // ✅ HOOK Ở TOP LEVEL
 
   // Lấy user từ accessToken
   useEffect(() => {
