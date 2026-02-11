@@ -56,16 +56,18 @@ export default function BookingPage() {
     0
   );
 
-  const handleConfirmBooking = async () => {
-    try {
-      await confirmBooking(showtime.id, selectedSeats, user.id);
-      alert("🎉 Thanh toán thành công!");
-      navigate("/my-bookings");
-    } catch (err) {
-      console.error(err);
-      alert("❌ Thanh toán thất bại");
-    }
+  const handleGoToCheckout = () => {
+    navigate("/checkout", {
+      state: {
+        movie,
+        showtime,
+        selectedSeats,
+        seats,
+        totalPrice,
+      },
+    });
   };
+
 
   return (
     <div
@@ -146,14 +148,14 @@ export default function BookingPage() {
                 <Button
                   size="lg"
                   style={{
-                    background:
-                      "linear-gradient(90deg, #ff416c, #ff4b2b)",
+                    background: "linear-gradient(90deg, #ff416c, #ff4b2b)",
                     border: "none",
                   }}
-                  onClick={handleConfirmBooking}
+                  onClick={handleGoToCheckout}
                 >
-                  💳 Thanh toán
+                  💳 Tiếp tục thanh toán
                 </Button>
+
               </Card.Footer>
             </Card>
           </Col>
